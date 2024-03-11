@@ -1,0 +1,6 @@
+email = "your email"
+email1 = "another email"
+password = "your password"
+password1 = "another password"
+name = "your name"
+name1 = "another name"
