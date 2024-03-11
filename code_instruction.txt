@@ -1,0 +1,99 @@
+from selenium.webdriver."your_browser".service import Service
+from selenium import webdriver
+from selenium.webdriver import "your_browser"
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+import time
+import json
+from dotenv import load_dotenv
+import os
+
+
+''' Загрузка переменных окружения из файла .env'''
+load_dotenv()
+
+users = [
+    {'first': os.getenv('email'), 'second' : os.getenv('password'), 'third' : os.getenv('name')},
+    {'first': os.getenv('email1'), 'second' : os.getenv('password1'), 'third' : os.getenv('name1')},
+]
+
+"your_browser"_driver_path = 'C:/user/"yourbrowserdriver".exe'
+"your_browser"_service = Service("your_browser"_driver_path)
+driver = webdriver."your_browser"(service="your_browser"_service)
+
+for user in users:
+    try:
+        '''Вход на основную страницу'''
+        driver.maximize_window()
+        driver.get('https://vk.com')
+        time.sleep(1)
+    
+        '''Инпут имейла для входа'''
+        email_input = driver.find_element(By.ID, 'index_email')
+        email_input.send_keys(user['first'])
+        email_input.send_keys(Keys.ENTER)
+        time.sleep(3)
+
+        '''Другой способ ввода'''
+        button_in = driver.find_element(By.CLASS_NAME, 'vkc__ConfirmOTP__buttonGroup')
+        button_in.click()
+        time.sleep(3)
+
+        '''Вход через пароль'''
+        button_password = driver.find_element(By.CSS_SELECTOR, '[data-test-id="verificationMethod_password"]')
+        button_password.click()
+        time.sleep(3)
+
+        '''Ввод пароля'''
+        password_input = driver.find_element(By.NAME, 'password')
+        password_input.send_keys(user['second'])
+        password_input.click()
+        time.sleep(3)
+
+        '''Продолжить'''
+        continue_password = driver.find_element(By.CLASS_NAME, 'vkuiButton__in')
+        continue_password.click()
+        time.sleep(3)
+
+        '''Клик на Моя страница'''
+        button_enters = driver.find_element(By.ID, 'l_pr')
+        button_enters.click()
+        time.sleep(1)
+
+        '''Прокрутка страницы 3 раза'''
+        for i in range(3):
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(1)
+
+        posts = driver.find_elements(By.CSS_SELECTOR, '[class="_post_content"]')
+        time.sleep(1)
+
+        likes_data = []
+
+        for post in posts[:10]:  # Берем только первые 10 постов
+            likes = post.find_elements(By.CSS_SELECTOR, '[data-section-ref="reactions-button"]')
+            time.sleep(1)
+            likes_count = [like.text for like in likes]
+    
+            likes_data.append({
+            "Лайки": likes_count
+            })
+
+        with open("likes_data.json", "w") as file:
+            json.dump(likes_data, file, indent=3)
+
+        total_likes = [int(like) for likes_data in likes_data for like in likes_data["Лайки"]]
+        print(f"Общее количество лайков у {user['third']} из первых 10 постов: {total_likes}")
+
+        button_menu = driver.find_element(By.XPATH, '//*[@id="top_profile_link"]')
+        button_menu.click()
+        time.sleep(1)
+
+        button_exit = driver.find_element(By.XPATH, '//*[@id="top_logout_link"]')
+        button_exit.click()
+        time.sleep(1)
+
+    except Exception as ex:
+        print(ex)
+    
+driver.quit()
